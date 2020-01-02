@@ -26,9 +26,6 @@ spec:
         chart: {{ template "jupyter.chart" . }}
         release: {{ .Release.Name }}
         heritage: {{ .Release.Service }}
-      annotations:
-        iguazio.com/prometheus-pull: "true"
-        iguazio.com/prometheus-pull-port: "{{ .Values.proxy.servicePort }}"
     spec:
       serviceAccountName: {{ template "jupyter.mpijobexecutor" . }}
       initContainers:
@@ -62,7 +59,7 @@ spec:
           workingDir: "/User"
           args:
             - --ip="0.0.0.0"
-            - --port={{ .Values.servicePort }}
+            - --port={{ .Values.proxy.servicePort }}
             - --NotebookApp.token=''
             - --NotebookApp.password=''
             - --notebook-dir="/User"
@@ -72,7 +69,7 @@ spec:
             - --debug
 {{- end }}
           ports:
-            - containerPort: {{ .Values.servicePort }}
+            - containerPort: {{ .Values.proxy.servicePort }}
               name: jupyter
           resources:
 {{ toYaml .Values.resources | indent 12 }}
@@ -82,7 +79,7 @@ spec:
               - /bin/bash
               - /etc/config/jupyter/health_check.sh
               - --uri-path=/lab
-              - --port={{ .Values.servicePort }}
+              - --port={{ .Values.proxy.servicePort }}
             initialDelaySeconds: 90
             periodSeconds: 1
           readinessProbe:
@@ -91,7 +88,7 @@ spec:
               - /bin/bash
               - /etc/config/jupyter/health_check.sh
               - --uri-path=/lab
-              - --port={{ .Values.servicePort }}
+              - --port={{ .Values.proxy.servicePort }}
             initialDelaySeconds: 5
             periodSeconds: 1
           env:
@@ -139,19 +136,6 @@ spec:
 {{- if .Values.volumes }}
 {{ include .Values.volumes.volumeMountsTemplate . | indent 12 }}
 {{- end }}
-        - name: sidecar-proxy
-          image: {{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}
-          command: ["proxy_server"]
-          args: 
-          - --listen-addr=:{{ .Values.proxy.servicePort }}
-          - --forward-addr=127.0.0.1:{{ .Values.servicePort }}
-          - --log-level={{ .Values.proxy.logLevel }}
-          - --namespace={{ .Release.Namespace }}
-          - --service-name={{ .Release.Name }}
-          - --instance-name={{ template "jupyter.fullname" . }}
-          ports:
-            - containerPort: {{ .Values.proxy.servicePort }}
-              name: sidecar-proxy
       volumes:
         - name: config-volume
           configMap:
