@@ -70,11 +70,11 @@ environment:
 
 volumes:
   master:
-    volumesTemplate: v3io-configs.deployment.mount
-    volumeMountsTemplate: v3io-configs.deployment.volumeMounts
+    volumesTemplate: v3io-configs.deployment.mount-with-fuse
+    volumeMountsTemplate: v3io-configs.deployment.volumeMounts-with-fuse-and-home
   worker:
-    volumesTemplate: v3io-configs.deployment.mount
-    volumeMountsTemplate: v3io-configs.deployment.volumeMounts
+    volumesTemplate: v3io-configs.deployment.mount-with-fuse
+    volumeMountsTemplate: v3io-configs.deployment.volumeMounts-with-fuse-and-home
 
 debug:
   enabled: false
